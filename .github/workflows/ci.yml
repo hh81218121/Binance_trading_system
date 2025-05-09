@@ -12,23 +12,17 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Set up Rust
-      uses: rust-lang/setup-rust@v1.8.0
-      with:
-        rust-version: stable
-
-    - name: Cache cargo registry
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      run: |
+        git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY .
+    
+    - name: Install Rust
+      run: |
+        curl https://sh.rustup.rs -sSf | sh -s -- -y
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
     - name: Build all crates
       run: |
+        source $HOME/.cargo/env
         for crate in $(find . -type f -name Cargo.toml); do
           echo "Building crate: $crate"
           (cd $(dirname "$crate") && cargo build --release)
@@ -36,6 +30,7 @@ jobs:
 
     - name: Run tests
       run: |
+        source $HOME/.cargo/env
         for crate in $(find . -type f -name Cargo.toml); do
           echo "Testing crate: $crate"
           (cd $(dirname "$crate") && cargo test)
