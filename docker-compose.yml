@@ -1,0 +1,52 @@
+
+version: '3.8'
+
+services:
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  market_feed_dispatcher:
+    build: ./market_feed_dispatcher
+    environment:
+      - RUST_LOG=${RUST_LOG}
+      - NATS_URL=${NATS_URL}
+    depends_on:
+      - nats
+
+  strategy_core_engine:
+    build: ./strategy_core_engine
+    environment:
+      - RUST_LOG=${RUST_LOG}
+      - NATS_URL=${NATS_URL}
+    depends_on:
+      - nats
+
+  oms_core:
+    build: ./oms_core
+    environment:
+      - RUST_LOG=${RUST_LOG}
+      - NATS_URL=${NATS_URL}
+    depends_on:
+      - nats
+
+  config_api_server:
+    build: ./config_api_server
+    ports:
+      - "${APP_PORT}:8080"
+    environment:
+      - RUST_LOG=${RUST_LOG}
+      - NATS_URL=${NATS_URL}
+    depends_on:
+      - nats
+
+  metrics_exporter:
+    build: ./metrics_exporter
+    ports:
+      - "${PROMETHEUS_PORT}:9100"
+    environment:
+      - RUST_LOG=${RUST_LOG}
+    depends_on:
+      - nats

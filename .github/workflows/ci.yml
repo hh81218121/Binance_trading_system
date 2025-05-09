@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Rust
+      uses: actions/setup-rust@v1
+      with:
+        rust-version: stable
+
+    - name: Cache cargo registry
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build all crates
+      run: |
+        for crate in $(find . -type f -name Cargo.toml | grep -v "./Cargo.toml"); do
+          echo "Building crate: $crate"
+          (cd $(dirname "$crate") && cargo build --release)
+        done
+
+    - name: Run tests
+      run: |
+        for crate in $(find . -type f -name Cargo.toml | grep -v "./Cargo.toml"); do
+          echo "Testing crate: $crate"
+          (cd $(dirname "$crate") && cargo test)
+        done
