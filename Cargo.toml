@@ -3,7 +3,7 @@ members = [
     "market_ws_binance_spot",
     "market_ws_binance_snapshot",
     "market_ws_aggregator",
-    "market_ws_tokenview_adapter",
+    "market_ws_glassnode_adapter",
     "market_ws_coinmarketcap_adapter",
     "market_feed_dispatcher",
     "strategy_core_engine",
